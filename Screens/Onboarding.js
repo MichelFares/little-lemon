@@ -1,10 +1,11 @@
 import * as React from "react";
-import {Touchable, Image, StyleSheet, Text, TextInput, View, Pressable, Alert, ScrollView} from "react-native";
+import { Image, StyleSheet, Text, TextInput, View, Pressable, Alert, ScrollView} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 
-const Onboarding = () => {
+
+const Onboarding = ({navigation}) => {
 
     const [fName, setfName] = React.useState('');
     const [email, setEmail] = React.useState('');
@@ -72,10 +73,12 @@ const Onboarding = () => {
           saveValue('false');
         }
         else{
-        Alert.alert("Thanks for subscribing, stay tuned!");
-        setstate('true')
-        saveValue('true');
-      }
+        //  Alert.alert("Thanks for subscribing, stay tuned!");
+         setstate('true');
+         saveValue('true');
+         navigation.navigate('Profile');
+  
+       }
        }}
        style={styles.presssCont}>
         <Text style={styles.buttonText}>
