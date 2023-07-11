@@ -1,11 +1,24 @@
 import * as React from "react";
-import {Touchable, Image, StyleSheet, Text, TextInput, View, Pressable, Alert, ScrollView} from "react-native";
+import { Image, StyleSheet, Text, TextInput, View, Pressable, Alert, ScrollView} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
-const Onboarding = () => {
+
+
+const Onboarding = ({navigation}) => {
 
     const [fName, setfName] = React.useState('');
     const [email, setEmail] = React.useState('');
+    const [state, setstate] = React.useState('false');
+
+    const saveValue = async (x) => {
+      try {
+        await AsyncStorage.setItem('123', x);
+        console.log(x + ' Value saved successfully.');
+      } catch (error) {
+        console.log('Error saving value:', error);
+      }
+    };
 
 
   return (
@@ -56,9 +69,16 @@ const Onboarding = () => {
       <Pressable onPress={() => {
         if (!fName || !email || fName.length <3 || email.length <8 ) {
           Alert.alert("Invalid FirstName or Email");
+          setstate('false')
+          saveValue('false');
         }
         else{
-        Alert.alert("Thanks for subscribing, stay tuned!");}
+        //  Alert.alert("Thanks for subscribing, stay tuned!");
+         setstate('true');
+         saveValue('true');
+         navigation.navigate('Profile');
+  
+       }
        }}
        style={styles.presssCont}>
         <Text style={styles.buttonText}>
@@ -77,7 +97,7 @@ const Onboarding = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: '10%',
+    // marginTop: '10%',
     backgroundColor: "#EDEFEE",
   },
 
