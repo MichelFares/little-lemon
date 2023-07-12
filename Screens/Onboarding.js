@@ -1,22 +1,41 @@
-import * as React from "react";
+import { useState } from 'react';
 import { Image, StyleSheet, Text, TextInput, View, Pressable, Alert, ScrollView} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 
-
 const Onboarding = ({navigation}) => {
 
-    const [fName, setfName] = React.useState('');
-    const [email, setEmail] = React.useState('');
-    const [state, setstate] = React.useState('false');
 
-    const saveValue = async (x) => {
+
+    const [fName, setfName] = useState('');
+    const [email, setEmail] = useState('');
+    const [onboard, setonboard] = useState('false');
+
+    const saveOnboard = async () => {
       try {
-        await AsyncStorage.setItem('123', x);
-        console.log(x + ' Value saved successfully.');
+        await AsyncStorage.setItem('onboard', onboard);
+        console.log(onboard + '     onboard saved successfully.');
       } catch (error) {
         console.log('Error saving value:', error);
+      }
+    };
+
+    const saveFirstName = async () => {
+      try {
+        await AsyncStorage.setItem('firstName', fName);
+        console.log('First Name saved successfully.');
+      } catch (error) {
+        console.log('Error saving First Name:', error);
+      }
+    };
+
+    const saveEmail = async () => {
+      try {
+        await AsyncStorage.setItem('email', email);
+        console.log('Email saved successfully.');
+      } catch (error) {
+        console.log('Error saving Email:', error);
       }
     };
 
@@ -69,14 +88,16 @@ const Onboarding = ({navigation}) => {
       <Pressable onPress={() => {
         if (!fName || !email || fName.length <3 || email.length <8 ) {
           Alert.alert("Invalid FirstName or Email");
-          setstate('false')
-          saveValue('false');
+          setonboard('false')
+          saveOnboard();
+          
         }
         else{
-        //  Alert.alert("Thanks for subscribing, stay tuned!");
-         setstate('true');
-         saveValue('true');
-         navigation.navigate('Profile');
+         setonboard('true');
+         saveOnboard();
+         saveFirstName();
+         saveEmail();
+         navigation.replace('Profile');
   
        }
        }}
