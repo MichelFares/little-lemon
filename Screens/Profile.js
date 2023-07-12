@@ -1,9 +1,143 @@
-import React from 'react';
-import { View, Image, StyleSheet, Text, Pressable, ScrollView, TextInput } from 'react-native';
+import { useState,useEffect } from 'react';
+import { View, Image, StyleSheet, Text, Pressable, ScrollView, TextInput, Alert } from 'react-native';
 import { CheckBox } from 'react-native-elements';
-import { color } from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
+
 
 const Profile = ({navigation}) => {
+
+  const [initialState, setInitialState] = useState({
+    image: null,
+    firstName: '',
+    lastName: '',
+    PhoneNumber: '',
+    email: '',
+  });
+
+  const [firstName, setFirstName] = useState(initialState.firstName);
+  const [lastName, setlastName] = useState(initialState.lastName);
+  const [email, setemail] = useState(initialState.email);
+  const [PhoneNumber, setPhoneNumber] = useState(initialState.PhoneNumber);
+  const [image, setImage] = useState(initialState.image);
+
+  // const [firstName, setFirstName] = useState('');
+  // const [lastName, setlastName] = useState('');
+  // const [email, setemail] = useState('');
+  // const [PhoneNumber, setPhoneNumber] = useState('');
+  // const [image, setImage] = useState(null);
+
+  useEffect(() => {
+
+    retrieveData();
+    // const getFirstName = async () => {
+    //   try {
+    //     const storedFirstName = await AsyncStorage.getItem('firstName');
+    //     if (storedFirstName !== null) {
+    //       setFirstName(storedFirstName);
+          
+    //     }
+    //   } catch (error) {
+    //     console.log('Error retrieving First Name:', error);
+    //   }
+    // };
+
+    // const getEmail = async () => {
+    //   try {
+    //     const storedEmail = await AsyncStorage.getItem('email');
+    //     if (storedEmail !== null) {
+    //       setemail(storedEmail);
+    //     }
+    //   } catch (error) {
+    //     console.log('Error retrieving Email:', error);
+    //   }
+    // };
+
+    // getFirstName();
+    // getEmail();
+  }, []);
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [3, 3],
+      quality: 1,
+    });
+
+    // console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  const removeImage = () => {
+    setImage(null);
+  };
+
+  const saveData = async () => {
+    if(firstName === '' || lastName === '' || email === '' || PhoneNumber === ''){
+      Alert.alert ('WARNING...', 'Please fill in all required input fields to save !')
+    }
+    else{
+    try {
+      await AsyncStorage.setItem('firstname', firstName);
+      await AsyncStorage.setItem('lastname', lastName);
+      await AsyncStorage.setItem('email', email);
+      await AsyncStorage.setItem('PhoneNumber', PhoneNumber);
+      await AsyncStorage.setItem('image', JSON.stringify(image));
+
+      Alert.alert ('Saved Successfully', 'All new input data are saved successfully !')
+      console.log('Data saved successfully!');
+    } catch (error) {
+      console.log('Error saving data: ', error);
+    }
+  }
+  }; 
+
+  const retrieveData = async () => {
+    try {
+      const retrievedFirstname = await AsyncStorage.getItem('firstname');
+      const retrievedLastname = await AsyncStorage.getItem('lastname');
+      const retrievedEmail = await AsyncStorage.getItem('email');
+      const retrievedPhoneNumber = await AsyncStorage.getItem('PhoneNumber');
+      const retrievedImage = await AsyncStorage.getItem('image');
+
+      if (retrievedFirstname !== null) {
+        setFirstName(retrievedFirstname);
+      }
+
+      if (retrievedLastname !== null) {
+        setlastName(retrievedLastname);
+      }
+
+      if (retrievedImage !== null) {
+        setImage(JSON.parse(retrievedImage));
+      }
+
+      if (retrievedEmail !== null) {
+        setemail(retrievedEmail);
+      }
+
+      if (retrievedPhoneNumber !== null) {
+        setPhoneNumber(retrievedPhoneNumber);
+      }
+    } catch (error) {
+      console.log('Error retrieving data: ', error);
+    }
+  };
+
+  const discardChanges = () => {
+    setImage(initialState.image);
+    setFirstName(initialState.firstName);
+    setlastName(initialState.lastName);
+    setemail(initialState.email);
+    setPhoneNumber(initialState.PhoneNumber);
+  };
+
+  
   return (
 
     <ScrollView style = {styles.container}>
@@ -15,17 +149,22 @@ const Profile = ({navigation}) => {
       </View>
 
       <View style = {styles.Innercontainer2}>
-        <Image 
-        style = {styles.ProfilePic}
-        source={require("../assets/Profile.png")}/>
+        
 
-        <Pressable>
+        {image ? 
+        <Image source={{ uri: image }} style={styles.ProfilePic} /> 
+        : 
+        (<View style={styles.placeholder}>
+          <Text style={styles.placeholderText}>{firstName.charAt(0)}{lastName.charAt(0)}</Text> 
+        </View>)}
+
+        <Pressable onPress={pickImage}>
           <Text style ={styles.buttonText1}>
             Change
           </Text>
         </Pressable>
 
-        <Pressable>
+        <Pressable onPress={removeImage}>
          <Text style ={styles.buttonText2}>
           Remove
          </Text>
@@ -37,23 +176,41 @@ const Profile = ({navigation}) => {
         <Text style ={styles.textinputheader}>
           First Name
         </Text>
-        <TextInput style ={styles.input}/>
+        <TextInput 
+        style ={styles.input} 
+        value={firstName}
+        placeholder='FirstName'
+        onChangeText={setFirstName}/>
         
 
         <Text style ={styles.textinputheader}>
           Last Name
         </Text>
-        <TextInput style ={styles.input}/>
+        <TextInput 
+        style ={styles.input} 
+        value={lastName}
+        placeholder='Last Name'
+        onChangeText={setlastName}/>
 
-        <Text style ={styles.textinputheader}>
+        <Text style ={styles.textinputheader} >
           Email
         </Text>
-        <TextInput style ={styles.input}/>
+        <TextInput 
+        style ={styles.input} 
+        value={email}
+        placeholder='Email'
+        onChangeText={setemail}
+        keyboardType='email-address'/>
 
         <Text style ={styles.textinputheader}>
           Phone Number
         </Text>
-        <TextInput style ={styles.input}/>
+        <TextInput 
+        style ={styles.input} 
+        value={PhoneNumber}
+        placeholder='Phone Number'
+        onChangeText={setPhoneNumber}
+        keyboardType='phone-pad'/>
 
       </View>
 
@@ -95,13 +252,13 @@ const Profile = ({navigation}) => {
 
      <View style = {styles.Innercontainer2}>
 
-     <Pressable>
+     <Pressable onPress={discardChanges}>
           <Text style ={styles.buttonText2}>
             Discard changes
           </Text>
         </Pressable>
 
-        <Pressable>
+        <Pressable onPress={saveData}>
           <Text style ={styles.buttonText1}>
             Save changes
           </Text>
@@ -152,9 +309,10 @@ const styles = StyleSheet.create({
   },
 
   ProfilePic: {
-    height: 80,
-    width:80,
+    height: 70,
+    width:70,
     marginLeft: 10,
+    borderRadius: 100,
     
   },
 
@@ -230,6 +388,22 @@ const styles = StyleSheet.create({
   CheckBoxtext: {
     fontSize: 15,
     color: '#495E57',
+  },
+
+  placeholder: {
+    width: 70,
+    height: 70,
+    borderRadius: 100,
+    marginLeft:10,
+    backgroundColor: 'gray',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  placeholderText: {
+    fontSize: 35,
+    color: 'white',
+    textAlign: 'center',
   },
 
   
